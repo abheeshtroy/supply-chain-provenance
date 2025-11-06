@@ -28,7 +28,7 @@ The contract:
 
 At this milestone, the project is kept intentionally lightweight.
 
-We will need:
+You will need:
 
 - A modern web browser (Chrome/Firefox/Edge/Brave)
 - [Remix IDE](https://remix.ethereum.org/) (browser-based)
