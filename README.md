@@ -48,7 +48,7 @@ There are **no local build tools** required yet (no Truffle/Hardhat).
    - Select compiler version `0.8.20` or any compatible `0.8.x`
    - Click **Compile SupplyChainProvenance.sol**
 5. In the **Deploy & Run Transactions** tab:
-   - Environment: `JavaScript VM (London)` for quick local testing
+   - Environment: `Remix CM (Prague)` for quick local testing
    - Deploy the `SupplyChainProvenance` contract.
 
 Example interactions:
