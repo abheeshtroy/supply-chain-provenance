@@ -32,12 +32,35 @@ module.exports = {
 
   contracts_build_directory: './client/src/artifacts',
   networks: {
+    // Development network - requires Ganache to be running
     development: {
       host: "127.0.0.1",     // Localhost (default: none)
       port: 7545,            // Standard Ethereum port (default: none)
       network_id: "*",       // Any network (default: none)
-    },
-
+    }
+    // Note: When running tests, Truffle automatically starts its own blockchain
+    // No need to configure a test network - tests will work without Ganache
+    // Uncomment and configure for testnet deployment
+    // polygon_amoy: {
+    //   provider: () => new HDWalletProvider(
+    //     process.env.MNEMONIC,
+    //     `https://rpc-amoy.polygon.technology`
+    //   ),
+    //   network_id: 80002,
+    //   confirmations: 2,
+    //   timeoutBlocks: 200,
+    //   skipDryRun: true
+    // },
+    // sepolia: {
+    //   provider: () => new HDWalletProvider(
+    //     process.env.MNEMONIC,
+    //     `https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`
+    //   ),
+    //   network_id: 11155111,
+    //   confirmations: 2,
+    //   timeoutBlocks: 200,
+    //   skipDryRun: true
+    // }
   },
 
   mocha: {
@@ -47,6 +70,14 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
+      version: "0.8.20",  // Use specific Solidity version
+      settings: {
+        optimizer: {
+          enabled: false,  // Disable optimizer for simpler deployment
+          runs: 200
+        },
+        evmVersion: "istanbul"
+      }
     }
   },
 

@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { IoMenu } from 'react-icons/io5';
 import { FaTimes } from 'react-icons/fa';
-import logob from '../assets/logob.png'; // Import your logo image here
+import logob from '../assets/logob.png';
 
 const Navbar = () => {
     const [open, setOpen] = useState(false);
 
     const links = [
         { name: 'Register', link: '/roles' },
-        { name: 'Place Order', link: '/addproducts' }, // Updated link to "Add Products"
+        { name: 'Place Order', link: '/addproducts' },
         { name: 'Manage Supply Chain', link: '/supply' },
         { name: 'Track Food Items', link: '/track' },
-        { name: 'QR-Code', link: '/qrcode' }
+        { name: 'QR Generator', link: '/qrcode' },
+        { name: 'QR Scanner', link: '/qrscan' },
+        { name: 'Environmental Data', link: '/environmental' }
     ];
 
     return (
@@ -20,7 +22,7 @@ const Navbar = () => {
             <div className="container">
                 {/* Brand Logo (Navbar Brand) */}
                 <Link to="/" className="navbar-brand">
-                    <img src={logob} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px' }} /> {/* Adjust width and height as needed */}
+                    <img src={logob} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px' }} />
                     OriginChain-Agri
                 </Link>
 

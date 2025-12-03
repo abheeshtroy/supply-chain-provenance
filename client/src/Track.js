@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { useHistory } from "react-router-dom"
+import { useHistory, useLocation } from "react-router-dom"
 import Web3 from "web3";
 import SupplyChainABI from "./artifacts/SupplyChain.json"
 import './Track.css';
 function Track() {
     const history = useHistory()
-    useEffect(() => {
-        loadWeb3();
-        loadBlockchaindata();
-    }, [])
-
+    const location = useLocation()
     const [currentaccount, setCurrentaccount] = useState("");
     const [loader, setloader] = useState(true);
     const [SupplyChain, setSupplyChain] = useState();
@@ -26,6 +22,49 @@ function Track() {
     const [TrackTillManufacture, showTrackTillManufacture] = useState(false);
     const [TrackTillRMS, showTrackTillRMS] = useState(false);
     const [TrackTillOrdered, showTrackTillOrdered] = useState(false);
+
+    useEffect(() => {
+        loadWeb3();
+        loadBlockchaindata();
+    }, [])
+
+    useEffect(() => {
+        if (!loader && SupplyChain && MED) {
+            const searchParams = new URLSearchParams(location.search);
+            const productIdFromUrl = searchParams.get('productId');
+            if (productIdFromUrl) {
+                const id = parseInt(productIdFromUrl);
+                setID(id);
+                const trackProduct = async () => {
+                    try {
+                        var ctr = await SupplyChain.methods.medicineCtr().call();
+                        if ((id > 0) && (id <= ctr)) {
+                            // eslint-disable-next-line
+                            if (MED[id].stage == 5)
+                                showTrackTillSold(true);
+                            // eslint-disable-next-line
+                            else if (MED[id].stage == 4)
+                                showTrackTillRetail(true);
+                            // eslint-disable-next-line
+                            else if (MED[id].stage == 3)
+                                showTrackTillDistribution(true);
+                            // eslint-disable-next-line
+                            else if (MED[id].stage == 2)
+                                showTrackTillManufacture(true);
+                            // eslint-disable-next-line
+                            else if (MED[id].stage == 1)
+                                showTrackTillRMS(true);
+                            else
+                                showTrackTillOrdered(true);
+                        }
+                    } catch (error) {
+                        console.error('Error auto-tracking:', error);
+                    }
+                };
+                trackProduct();
+            }
+        }
+    }, [loader, SupplyChain, MED, location.search])
 
     const loadWeb3 = async () => {
         if (window.ethereum) {
@@ -412,6 +451,7 @@ function Track() {
     const redirect_to_home = () => {
         history.push('/')
     }
+    
     const handlerSubmit = async (event) => {
         event.preventDefault();
         var ctr = await SupplyChain.methods.medicineCtr().call();

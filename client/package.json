@@ -1,5 +1,5 @@
 {
-  "homepage": "https://mohit6304.github.io/OriginChain-Agri",
+  "homepage": ".",
   "name": "client",
   "version": "0.1.0",
   "private": true,
@@ -18,7 +18,8 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "^5.0.1",
     "web-vitals": "^1.1.1",
-    "web3": "^1.10.4"
+    "web3": "^1.10.4",
+    "ipfs-http-client": "^60.0.1"
   },
   "scripts": {
     "start": "react-scripts --openssl-legacy-provider start",

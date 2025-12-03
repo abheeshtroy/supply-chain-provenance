@@ -32,7 +32,38 @@ function AssignRoles() {
     const loadWeb3 = async () => {
         if (window.ethereum) {
             window.web3 = new Web3(window.ethereum);
-            await window.ethereum.enable();
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                console.log('Connected accounts:', accounts);
+                
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                const chainIdNum = parseInt(chainId, 16);
+                console.log('MetaMask Chain ID:', chainIdNum);
+                
+                if (chainIdNum !== 1337 && chainIdNum !== 5777) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x539' }], // 1337 in hex
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x539', // 1337
+                                    chainName: 'Agri-Supply-Chain',
+                                    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                                    rpcUrls: ['http://127.0.0.1:7545'],
+                                }],
+                            });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Connection error:', err);
+                window.alert('Please connect MetaMask and switch to Agri-Supply-Chain network');
+            }
         } else if (window.web3) {
             window.web3 = new Web3(window.web3.currentProvider);
         } else {
@@ -48,8 +79,20 @@ function AssignRoles() {
         const accounts = await web3.eth.getAccounts();
         const account = accounts[0];
         setCurrentaccount(account);
-        const networkId = await web3.eth.net.getId();
-        const networkData = SupplyChainABI.networks[networkId];
+        let networkId = await web3.eth.net.getId();
+        try {
+            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+            const chainIdNum = parseInt(chainId, 16);
+            console.log('Chain ID from MetaMask:', chainIdNum);
+            if (chainIdNum === 1337 || chainIdNum === 5777) {
+                networkId = chainIdNum;
+            }
+        } catch (e) {
+            console.log('Could not get chain ID from MetaMask');
+        }
+        console.log('Network ID from web3:', networkId, typeof networkId);
+        console.log('Available networks in artifacts:', Object.keys(SupplyChainABI.networks || {}));
+        const networkData = SupplyChainABI.networks[networkId] || SupplyChainABI.networks[String(networkId)] || SupplyChainABI.networks[networkId.toString()];
         if (networkData) {
             const supplychain = new web3.eth.Contract(SupplyChainABI.abi, networkData.address);
             setSupplyChain(supplychain);

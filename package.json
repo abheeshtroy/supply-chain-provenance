@@ -1,4 +1,13 @@
 {
+  "name": "supply-chain-provenance",
+  "version": "1.0.0",
+  "scripts": {
+    "compile": "truffle compile",
+    "migrate": "truffle migrate",
+    "test": "truffle test",
+    "test:ci": "truffle test --network test",
+    "develop": "truffle develop"
+  },
   "dependencies": {
     "truffle": "^5.7.4",
     "web3": "^4.11.1"

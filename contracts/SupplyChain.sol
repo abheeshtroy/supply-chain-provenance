@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.4.22 <0.9.0;
+pragma solidity ^0.8.0;
 
 contract SupplyChain {
     //Smart Contract owner will be the person who deploys the contract only he can authorize various roles like retailer, Manufacturer,etc
     address public Owner;
 
     //note this constructor will be called when smart contract will be deployed on blockchain
-    constructor() public {
+    constructor() {
         Owner = msg.sender;
     }
 
@@ -45,7 +45,7 @@ contract SupplyChain {
     uint256 public retCtr = 0;
 
     //To store information about the food product
-    struct food product {
+    struct FoodProduct {
         uint256 id; //unique food product id
         string name; //name of the food product
         string description; //about food product
@@ -54,16 +54,19 @@ contract SupplyChain {
         uint256 DISid; //id of the distributor for this particular food product
         uint256 RETid; //id of the retailer for this particular food product
         STAGE stage; //current food product stage
+        string ipfsHash; //IPFS hash for storing certificates and environmental data
+        uint256 createdAt; //timestamp when product was created
+        uint256 lastUpdatedAt; //timestamp of last update
     }
 
     //To store all the food products on the blockchain
-    mapping(uint256 => food product) public MedicineStock;
+    mapping(uint256 => FoodProduct) public MedicineStock;
 
     //To show status to client applications
     function showStage(uint256 _medicineID)
         public
         view
-        returns (string memory)
+        returns (string memory stage)
     {
         require(medicineCtr > 0);
         if (MedicineStock[_medicineID].stage == STAGE.Init)
@@ -78,6 +81,7 @@ contract SupplyChain {
             return "Retail Stage";
         else if (MedicineStock[_medicineID].stage == STAGE.sold)
             return "Food Product Sold";
+        return ""; // Default return for safety
     }
 
     //To store information about raw material supplier
@@ -172,6 +176,8 @@ contract SupplyChain {
         require(MedicineStock[_medicineID].stage == STAGE.Init);
         MedicineStock[_medicineID].RMSid = _id;
         MedicineStock[_medicineID].stage = STAGE.RawMaterialSupply;
+        MedicineStock[_medicineID].lastUpdatedAt = block.timestamp;
+        emit ProductTransferred(_medicineID, STAGE.RawMaterialSupply, msg.sender);
     }
 
     //To check if RMS is available in the blockchain
@@ -191,6 +197,8 @@ contract SupplyChain {
         require(MedicineStock[_medicineID].stage == STAGE.RawMaterialSupply);
         MedicineStock[_medicineID].MANid = _id;
         MedicineStock[_medicineID].stage = STAGE.Manufacture;
+        MedicineStock[_medicineID].lastUpdatedAt = block.timestamp;
+        emit ProductTransferred(_medicineID, STAGE.Manufacture, msg.sender);
     }
 
     //To check if Manufacturer is available in the blockchain
@@ -210,6 +218,8 @@ contract SupplyChain {
         require(MedicineStock[_medicineID].stage == STAGE.Manufacture);
         MedicineStock[_medicineID].DISid = _id;
         MedicineStock[_medicineID].stage = STAGE.Distribution;
+        MedicineStock[_medicineID].lastUpdatedAt = block.timestamp;
+        emit ProductTransferred(_medicineID, STAGE.Distribution, msg.sender);
     }
 
     //To check if distributor is available in the blockchain
@@ -229,6 +239,8 @@ contract SupplyChain {
         require(MedicineStock[_medicineID].stage == STAGE.Distribution);
         MedicineStock[_medicineID].RETid = _id;
         MedicineStock[_medicineID].stage = STAGE.Retail;
+        MedicineStock[_medicineID].lastUpdatedAt = block.timestamp;
+        emit ProductTransferred(_medicineID, STAGE.Retail, msg.sender);
     }
 
     //To check if retailer is available in the blockchain
@@ -248,7 +260,16 @@ contract SupplyChain {
         require(_id == MedicineStock[_medicineID].RETid); //Only correct retailer can mark food product as sold
         require(MedicineStock[_medicineID].stage == STAGE.Retail);
         MedicineStock[_medicineID].stage = STAGE.sold;
+        MedicineStock[_medicineID].lastUpdatedAt = block.timestamp;
+        emit ProductSold(_medicineID, msg.sender);
+        emit ProductTransferred(_medicineID, STAGE.sold, msg.sender);
     }
+
+    // Events for tracking
+    event ProductRegistered(uint256 indexed productId, string name, address indexed owner);
+    event ProductTransferred(uint256 indexed productId, STAGE newStage, address indexed actor);
+    event IPFSHashUpdated(uint256 indexed productId, string ipfsHash);
+    event ProductSold(uint256 indexed productId, address indexed retailer);
 
     // To add new food products to the stock
     function addMedicine(string memory _name, string memory _description)
@@ -257,7 +278,7 @@ contract SupplyChain {
     {
         require((rmsCtr > 0) && (manCtr > 0) && (disCtr > 0) && (retCtr > 0));
         medicineCtr++;
-        MedicineStock[medicineCtr] = food product(
+        MedicineStock[medicineCtr] = FoodProduct(
             medicineCtr,
             _name,
             _description,
@@ -265,7 +286,22 @@ contract SupplyChain {
             0,
             0,
             0,
-            STAGE.Init
+            STAGE.Init,
+            "",
+            block.timestamp,
+            block.timestamp
         );
+        emit ProductRegistered(medicineCtr, _name, msg.sender);
+    }
+
+    // Update IPFS hash for a product (for storing certificates, environmental data, etc.)
+    function updateIPFSHash(uint256 _medicineID, string memory _ipfsHash)
+        public
+        onlyByOwner()
+    {
+        require(_medicineID > 0 && _medicineID <= medicineCtr);
+        MedicineStock[_medicineID].ipfsHash = _ipfsHash;
+        MedicineStock[_medicineID].lastUpdatedAt = block.timestamp;
+        emit IPFSHashUpdated(_medicineID, _ipfsHash);
     }
 }

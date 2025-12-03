@@ -8,6 +8,8 @@ import Track from './Track';
 import Navbar from './components/Navbar';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import QRGenerator from './components/QR_gen';
+import QRScanner from './components/QR_scanner';
+import EnvironmentalData from './components/EnvironmentalData';
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
           <Route path="/supply" component={Supply} />
           <Route path="/track" component={Track} />
           <Route path="/qrcode" component={QRGenerator} />
+          <Route path="/qrscan" component={QRScanner} />
+          <Route path="/environmental" component={EnvironmentalData} />
         </Switch>
       </div>
     </Router>
